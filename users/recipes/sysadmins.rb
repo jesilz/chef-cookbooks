@@ -23,6 +23,11 @@
 
 chef_gem "ruby-shadow"
 
+case node['platform']
+when 'ubuntu', 'debian'
+  package "bash-completion"
+end
+
 users_manage "sysadmin" do
   group_id 2300
   action [ :remove, :create ]
