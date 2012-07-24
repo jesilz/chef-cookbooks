@@ -1,10 +1,10 @@
 dbpath = /srv/mongodb
 port = 27017
-bind_ip = <%= @node['ipaddress'] %>
+bind_ip = <%= @node.ipaddress %>
 logpath = /var/log/mongodb/mongodb.log
 #auth = true
 #nohttpinterface = true
-replSet = bioset
+replSet = <%= "biola_#{@node.chef_environment}" %>
 journal = true
 oplogSize = 100
 # <%= @node['domain'] %>
