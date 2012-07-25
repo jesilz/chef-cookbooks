@@ -3,8 +3,6 @@ include_recipe 'mongodb_biola::install'
 chef_gem 'bson_ext'
 chef_gem 'mongo'
 
-Chef::Log.info("START: replica_set")
-
 require 'mongo'
 
 MONGODB_PORT = 27017
@@ -48,10 +46,10 @@ end
 success = response['ok'] == 1
 
 if success
-  Chef::Log.info("Replica set initiated: #{response.inspect}")
+  Chef::Log.info("Replica set sucessfully initiated")
 else
   if response['errmsg'] == 'already initialized'
-    Chef::Log.info("Replica set already initiated: #{response.inspect}")
+    Chef::Log.info("Replica set already initiated")
 
     # TODO: add and remove dbs
 
@@ -59,5 +57,3 @@ else
     Chef::Log.error("Replica set initiation failed: #{response['errmsg']}")
   end
 end
-
-Chef::Log.info("DONE: replica_set")
