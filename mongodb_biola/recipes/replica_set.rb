@@ -1,6 +1,9 @@
-include_recipe 'install'
+include_recipe 'mongodb_biola::install'
 
+chef_gem 'bson_ext'
 chef_gem 'mongo'
+
+Chef::Log.info("START: replica_set")
 
 require 'mongo'
 
@@ -22,13 +25,13 @@ end
 # Build replSetInitiate command
 member_id = 0
 members = []
-db_nodes.sort_by(&:name).each |n|
-  members << { '_id' => i, 'host' => "#{n.fqdn}:#{MONGODB_PORT}" }
-  i += 1
+db_nodes.sort_by(&:name).each do |n|
+  members << { '_id' => member_id, 'host' => "#{n.fqdn}:#{MONGODB_PORT}" }
+  member_id += 1
 end
-arbiter_nodes.sort_by(&:name).each |n|
-  members << { '_id' => i, 'host' => "#{n.fqdn}:#{MONGODB_PORT}", 'arbiterOnly' => true }
-  i += 1
+arbiter_nodes.sort_by(&:name).each do |n|
+  members << { '_id' => member_id, 'host' => "#{n.fqdn}:#{MONGODB_PORT}", 'arbiterOnly' => true }
+  member_id += 1
 end
 
 # Run the replSetInitiate command
@@ -42,14 +45,19 @@ rescue Mongo::OperationTimeout
   return
 end
 
-success = result['ok'] == 1
+success = response['ok'] == 1
 
-unless success
-  if result['errmsg'] == 'already initialized'
+if success
+  Chef::Log.info("Replica set initiated: #{response.inspect}")
+else
+  if response['errmsg'] == 'already initialized'
+    Chef::Log.info("Replica set already initiated: #{response.inspect}")
 
     # TODO: add and remove dbs
 
   else
-    Chef::Log.error("Replica set initiation failed: #{result['errmsg']}")
+    Chef::Log.error("Replica set initiation failed: #{response['errmsg']}")
   end
 end
+
+Chef::Log.info("DONE: replica_set")
